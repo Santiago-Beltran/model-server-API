@@ -1,0 +1,22 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+uvicorn = "*"
+pytest = "*"
+fastapi = "*"
+pydantic = "*"
+httpx = "*"
+pydantic-settings = "*"
+asgi-correlation-id = "*"
+python-json-logger = "*"
+rich = "*"
+xgboost = "*"
+haversine = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.13"
