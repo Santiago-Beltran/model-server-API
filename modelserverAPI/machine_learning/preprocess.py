@@ -3,7 +3,7 @@ from pydantic import PositiveFloat
 from haversine import haversine
 
 
-from modelserverAPI.models.usage import RawInput, ProcessedData, VALID_FIELDS
+from modelserverAPI.models.usage import RawInput, ProcessedData, CityEnum, PropertyTypeEnum
 
 NUMBER_OF_PROPERTIES_PER_ZONE = 80
 
@@ -28,21 +28,21 @@ def get_mean_price_per_sqm_in_zone(latitude: float, longitude: float) -> Positiv
 
 
 def get_property_type_booleans(property_type: str) -> tuple:
-    if property_type not in VALID_FIELDS["property_type"]:
+    if  property_type not in PropertyTypeEnum.__members__.values():
         return None
 
     return {
         valid_property_type: (1 if property_type == valid_property_type else 0)
-        for valid_property_type in VALID_FIELDS["property_type"]
+        for valid_property_type in PropertyTypeEnum.__members__.values()
     }
 
 
 def get_city_booleans(city: str) -> dict:
-    if city not in VALID_FIELDS["city"]:
+    if city not in CityEnum.__members__.values():
         return None
     return {
         valid_city: (1 if valid_city == city else 0)
-        for valid_city in VALID_FIELDS["city"]
+        for valid_city in CityEnum.__members__.values()
     }
 
 
@@ -63,14 +63,14 @@ def transform_data(raw_input: RawInput) -> ProcessedData:
         strata=raw_input.strata,
         latitude=raw_input.latitude,
         longitude=raw_input.longitude,
-        sauna_turkish_bath_jacuzzi=raw_input.bool_sauna_turkishbath_pool,
-        pool=raw_input.bool_pool,
+        sauna_turkish_bath_jacuzzi=raw_input.has_sauna_jacuzzi_or_turkish_bath,
+        pool=raw_input.has_pool,
         property_type_Apartamento=property_booleans_dict["apartment"],
         property_type_Casa=property_booleans_dict["house"],
         city_Bello=city_booleans_dict["bello"],
         city_Envigado=city_booleans_dict["envigado"],
         city_Itaguí=city_booleans_dict["itagui"],
-        city_La_estrella=city_booleans_dict["la estrella"],
+        city_La_estrella=city_booleans_dict["la_estrella"],
         city_Medellín=city_booleans_dict["medellin"],
         city_Sabaneta=city_booleans_dict["sabaneta"],
     )

@@ -1,67 +1,53 @@
-from pydantic import BaseModel, ConfigDict, model_validator, PositiveInt, PositiveFloat
-from typing import Literal
+from enum import Enum
+from typing import Annotated, Literal
 
-from modelserverAPI.config.error_messages import ERROR_MESSAGES
-from modelserverAPI.config.valid_fields import VALID_FIELDS
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    PositiveFloat,
+    PositiveInt,
+)
 
+class CityEnum(str, Enum):
+    MEDELLIN = 'medellin'
+    ENVIGADO = 'envigado'
+    BELLO = 'bello'
+    ITAGUI = 'itagui'
+    LA_ESTRELLA = 'la_estrella'
+    SABANETA = 'sabaneta'
+
+class PropertyTypeEnum(str, Enum):
+    HOUSE = 'house'
+    APARTMENT = 'apartment'
 
 # Adapt the expected input to your case.
 class RawInput(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    city: str
-    property_type: str
-    strata: PositiveInt
-    area: PositiveFloat
-    built_area: PositiveFloat
-    rooms: PositiveInt
-    bathrooms: PositiveInt
-    parking_spots: int
+    city: CityEnum
+    property_type: PropertyTypeEnum
+    strata: Annotated[int, Field(ge=1, le=6)]
+    area: Annotated[float, Field(ge=30, le=10_000)]
+    built_area: Annotated[float, Field(ge=30, le=5_000)]
+    rooms: Annotated[int, Field(gt=0, lt=10)]
+    bathrooms: Annotated[int, Field(gt=0, lt=10)]
+    parking_spots: Annotated[int, Field(ge=0, lt=10)]
 
-    bool_sauna_turkishbath_pool: bool
-    bool_pool: bool
+    has_sauna_jacuzzi_or_turkish_bath: bool
+    has_pool: bool
 
-    antiquity: PositiveInt
+    antiquity: Annotated[int, Field(ge=1, le=5)]
 
-    latitude: float
-    longitude: float
+    latitude: Annotated[float, Field(ge=6, le=6.5)]
+    longitude: Annotated[float, Field(ge=-75.6, le=-75.3)]
 
-    # Validate multiple option fields
-    @model_validator(mode="after")
-    def validate_multipleoption_fields(self):
-        if not self.city in VALID_FIELDS["city"]:
-            raise ValueError(ERROR_MESSAGES["validity"]["city"])
 
-        if not self.property_type in VALID_FIELDS["property_type"]:
-            raise ValueError(ERROR_MESSAGES["validity"]["property_type"])
-
-        if not self.strata in VALID_FIELDS["strata"]:
-            raise ValueError(ERROR_MESSAGES["validity"]["strata"])
-
-        if not self.antiquity in VALID_FIELDS["antiquity"]:
-            raise ValueError(ERROR_MESSAGES["validity"]["antiquity"])
-        
-        return self
-    
-    @model_validator(mode="after")
-    def validate_ranges_of_fields(self):
-        if not (30 <= self.area <= 10_000):
-            raise ValueError(ERROR_MESSAGES['validity']['area'])
-        if not(30 <= self.built_area <= 5_000):
-            raise ValueError(ERROR_MESSAGES['validity']['built_area'])
-        if not(0 < self.rooms < 10):
-            raise ValueError(ERROR_MESSAGES['validity']['rooms'])
-        if not(0 < self.bathrooms < 10):
-            raise ValueError(ERROR_MESSAGES['validity']['bathrooms'])
-        if not(6 <= self.latitude <= 6.5):
-            raise ValueError(ERROR_MESSAGES['validity']['latitude'])
-        if not(-75.6 <= self.longitude <= -75.3):
-            raise ValueError(ERROR_MESSAGES['validity']['longitude'])
-        
-        return self
-
-# What should be the result of processing the data...
+# What the model will be fed with...
+# Variables must match column names.
 class ProcessedData(BaseModel):
+    """This is what the model will be fed with..."""
+
     model_config = ConfigDict(from_attributes=True)
 
     zone_mean_price_per_sqm: PositiveFloat
