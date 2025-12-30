@@ -7,4 +7,4 @@ from functools import lru_cache
 @lru_cache
 def load_model() -> xgb.sklearn.XGBRegressor:
     with open("model.pickle", "rb") as f:
-        return pickle.load(f)['model']
+        return pickle.load(f)["model"]

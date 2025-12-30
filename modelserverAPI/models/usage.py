@@ -1,11 +1,9 @@
 from pydantic import BaseModel, ConfigDict, model_validator, PositiveInt, PositiveFloat
 from typing import Literal
 
+from modelserverAPI.config.error_messages import ERROR_MESSAGES
+from modelserverAPI.config.valid_fields import VALID_FIELDS
 
-VALID_PROPERTY_TYPES = ('house', 'apartment')
-VALID_CITIES = ("bello", "envigado", "itagui", "la estrella", "medellin", "sabaneta")
-VALID_STRATA = (1, 2, 3, 4, 5, 6)
-VALID_ANTIQUITY = (1, 2, 3, 4, 5)
 
 # Adapt the expected input to your case.
 class RawInput(BaseModel):
@@ -28,57 +26,43 @@ class RawInput(BaseModel):
     latitude: float
     longitude: float
 
-    # Validate accordingly
+    # Validate multiple option fields
     @model_validator(mode="after")
-    def validate_property_type(self):
-        if self.property_type not in VALID_PROPERTY_TYPES:
-            raise ValueError(f"property type must be one of the following: {VALID_PROPERTY_TYPES}")
-        return self
+    def validate_multipleoption_fields(self):
+        if not self.city in VALID_FIELDS["city"]:
+            raise ValueError(ERROR_MESSAGES["validity"]["city"])
 
-    @model_validator(mode="after")
-    def validate_city(self):
-        if self.city not in VALID_CITIES:
-            raise ValueError(f"city must be one of the following: {VALID_CITIES}")
-        return self
+        if not self.property_type in VALID_FIELDS["property_type"]:
+            raise ValueError(ERROR_MESSAGES["validity"]["property_type"])
 
+        if not self.strata in VALID_FIELDS["strata"]:
+            raise ValueError(ERROR_MESSAGES["validity"]["strata"])
 
-    @model_validator(mode="after")
-    def validate_strata(self):
-        if self.strata not in VALID_STRATA:
-            raise ValueError(f"strata must be one of the following: {VALID_STRATA}")
-        return self
+        if not self.antiquity in VALID_FIELDS["antiquity"]:
+            raise ValueError(ERROR_MESSAGES["validity"]["antiquity"])
         
-
-    @model_validator(mode="after")
-    def validate_antiquity(self):
-        if self.antiquity not in VALID_ANTIQUITY:
-            raise ValueError(f"antiquity must be one of the following: {VALID_ANTIQUITY}")
         return self
-
+    
     @model_validator(mode="after")
-    def validate_areas(self):
-        if self.built_area > self.area:
-            raise ValueError("built_area must be smaller than area")
-        return self
-
-    @model_validator(mode="after")
-    def validate_location(self):
-        if not (6.1 <= self.latitude <= 6.4):
-            raise ValueError("location provided is outside of Aburra's Valley")
-        if not (-75.65 <= self.longitude <= -75.50):
-            raise ValueError("location provided is outside of Aburra's Valley")
-        return self
+    def validate_ranges_of_fields(self):
+        if not (30 <= self.area <= 10_000):
+            raise ValueError(ERROR_MESSAGES['validity']['area'])
+        if not(30 <= self.built_area <= 5_000):
+            raise ValueError(ERROR_MESSAGES['validity']['built_area'])
+        if not(0 < self.rooms < 10):
+            raise ValueError(ERROR_MESSAGES['validity']['rooms'])
+        if not(0 < self.bathrooms < 10):
+            raise ValueError(ERROR_MESSAGES['validity']['bathrooms'])
+        if not(6 <= self.latitude <= 6.5):
+            raise ValueError(ERROR_MESSAGES['validity']['latitude'])
+        if not(-75.6 <= self.longitude <= -75.3):
+            raise ValueError(ERROR_MESSAGES['validity']['longitude'])
         
-    @model_validator(mode="after")
-    def validate_parking_spots(self):
-        if not (0 <= self.parking_spots):
-            raise ValueError("parking spots must be greater than or equal to zero")
         return self
-        
+
 # What should be the result of processing the data...
 class ProcessedData(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-
 
     zone_mean_price_per_sqm: PositiveFloat
     area_sqm: PositiveFloat
@@ -101,8 +85,7 @@ class ProcessedData(BaseModel):
     city_Medellín: bool
     city_Sabaneta: bool
 
+
 # Output of the prediction, return the given data for traceability purposes
 class PredictionOut(RawInput):
     prediction: PositiveFloat
-
-

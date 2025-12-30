@@ -9,7 +9,7 @@ from asgi_correlation_id import CorrelationIdMiddleware
 
 
 from modelserverAPI.logging_conf import configure_logging
-from modelserverAPI.models.usage import RawInput, ProcessedData ,PredictionOut
+from modelserverAPI.models.usage import RawInput, ProcessedData, PredictionOut
 from modelserverAPI.machine_learning.load_model import load_model
 from modelserverAPI.machine_learning.preprocess import transform_data
 
@@ -27,7 +27,6 @@ app.add_middleware(CorrelationIdMiddleware)
 
 app.state.ml_model = load_model()
 
-print("LAURITA, ", app.state.ml_model)
 
 @app.post("/predict", response_model=float)
 async def get_prediction(info: RawInput):
@@ -37,12 +36,8 @@ async def get_prediction(info: RawInput):
 
     logger.debug("Generating Prediction...")
 
-    print("LAURIIITA, ", data)
-
-    X = np.array([list(data.values())]) # wrap in list to make it 2D 
+    X = np.array([list(data.values())])  # wrap in list to make it 2D
 
     prediction = model.predict(X)
 
     return float(prediction[0])
-
-

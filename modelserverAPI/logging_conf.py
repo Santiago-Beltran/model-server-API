@@ -1,7 +1,7 @@
 import logging
 from logging.config import dictConfig
 
-from modelserverAPI.config import DevConfig, config
+from modelserverAPI.config.main import DevConfig, config
 
 HANDLERS = ["default", "rotating_file"]
 
