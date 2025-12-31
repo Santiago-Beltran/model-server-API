@@ -9,17 +9,20 @@ from pydantic import (
     PositiveInt,
 )
 
+
 class CityEnum(str, Enum):
-    MEDELLIN = 'medellin'
-    ENVIGADO = 'envigado'
-    BELLO = 'bello'
-    ITAGUI = 'itagui'
-    LA_ESTRELLA = 'la_estrella'
-    SABANETA = 'sabaneta'
+    MEDELLIN = "medellin"
+    ENVIGADO = "envigado"
+    BELLO = "bello"
+    ITAGUI = "itagui"
+    LA_ESTRELLA = "la_estrella"
+    SABANETA = "sabaneta"
+
 
 class PropertyTypeEnum(str, Enum):
-    HOUSE = 'house'
-    APARTMENT = 'apartment'
+    HOUSE = "house"
+    APARTMENT = "apartment"
+
 
 # Adapt the expected input to your case.
 class RawInput(BaseModel):

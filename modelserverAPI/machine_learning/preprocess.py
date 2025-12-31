@@ -3,7 +3,12 @@ from pydantic import PositiveFloat
 from haversine import haversine
 
 
-from modelserverAPI.models.usage import RawInput, ProcessedData, CityEnum, PropertyTypeEnum
+from modelserverAPI.models.usage import (
+    RawInput,
+    ProcessedData,
+    CityEnum,
+    PropertyTypeEnum,
+)
 
 NUMBER_OF_PROPERTIES_PER_ZONE = 80
 
@@ -28,7 +33,7 @@ def get_mean_price_per_sqm_in_zone(latitude: float, longitude: float) -> Positiv
 
 
 def get_property_type_booleans(property_type: str) -> tuple:
-    if  property_type not in PropertyTypeEnum.__members__.values():
+    if property_type not in PropertyTypeEnum.__members__.values():
         return None
 
     return {

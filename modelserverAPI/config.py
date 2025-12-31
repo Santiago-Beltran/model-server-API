@@ -5,8 +5,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
     ENV_STATE: Optional[str] = None
+    API_KEY_NAME: Optional[str] = None
+    API_KEY: Optional[str] = None
 
 
 class DevConfig(Settings):
@@ -24,7 +27,6 @@ class ProdConfig(Settings):
 @lru_cache
 def get_config(env_state: str):
     configs = {"dev": DevConfig, "test": TestConfig, "prod": ProdConfig}
-    return Settings()
-
+    return configs[env_state]()
 
 config = get_config(Settings().ENV_STATE)
