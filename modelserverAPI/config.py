@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     ENV_STATE: Optional[str] = None
     API_KEY_NAME: Optional[str] = None
     API_KEY: Optional[str] = None
+    RATE_LIMIT_PER_SEG: Optional[int] = 5
+    
 
 
 class DevConfig(Settings):

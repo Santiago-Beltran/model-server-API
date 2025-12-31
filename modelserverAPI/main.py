@@ -1,5 +1,6 @@
 import logging
 import xgboost as xgb
+from requests import Request
 
 from contextlib import asynccontextmanager
 
@@ -8,6 +9,8 @@ from fastapi import FastAPI, Security, HTTPException, status
 from fastapi.security.api_key import APIKeyHeader
 from asgi_correlation_id import CorrelationIdMiddleware
 
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from modelserverAPI.logging_conf import configure_logging
 from modelserverAPI.models.usage import RawInput, ProcessedData, PredictionOut
@@ -18,6 +21,8 @@ from modelserverAPI.config import config
 
 logger = logging.getLogger(__name__)
 
+RATE_AUTH_LIMIT = 5
+TIME_WINDOW = 1
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,6 +31,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+#app.state.limiter = limiter
+
 app.add_middleware(CorrelationIdMiddleware)
 
 api_key_header = APIKeyHeader(name=config.API_KEY_NAME)
@@ -49,8 +57,8 @@ async def get_prediction(info: RawInput, api_key: str = Security(get_api_key)):
     model: xgb.sklearn.XGBModel = app.state.ml_model
 
     logger.debug("Generating Prediction...")
-    X = np.array([list(data.values())])  # wrap in list to make it 2D
+    X = np.array([list(data.values())]) 
 
     prediction = model.predict(X)[0]
 
-    return float(prediction)
+    return float(1)

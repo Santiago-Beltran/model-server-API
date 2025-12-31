@@ -15,6 +15,9 @@ python-json-logger = "*"
 rich = "*"
 xgboost = "*"
 haversine = "*"
+slowapi = "*"
+requests = "*"
+pandas = "*"
 
 [dev-packages]
 

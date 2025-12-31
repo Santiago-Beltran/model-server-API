@@ -1,5 +1,7 @@
+import time
 import pytest
 from httpx import AsyncClient
+import asyncio
 
 from modelserverAPI.config import config
 
@@ -93,3 +95,19 @@ async def test_prediction_unauthorized_no_headers(
     response = await async_client.post("/predict", json=good_info)
     assert response.status_code == 401
 
+# Meant only as a local benchmark
+@pytest.mark.anyio
+async def test_predict_performance(async_client: AsyncClient, good_info: dict):
+    """Meant only as a local benchmark"""
+
+    num_requests = 500
+    max_response_time = 1
+
+    async def send_request():
+        start_time = time.time()
+        await async_client.post("/predict", json=good_info, headers={config.API_KEY_NAME: config.API_KEY})
+        elapsed_time = time.time() - start_time
+        return elapsed_time
+
+    elapsed_times = [await send_request() for _ in range(num_requests)]
+    assert sum(elapsed_times) <= max_response_time
