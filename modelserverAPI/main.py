@@ -4,6 +4,8 @@ from requests import Request
 
 from contextlib import asynccontextmanager
 
+import requests
+
 import numpy as np
 from fastapi import FastAPI, Security, HTTPException, status
 from fastapi.security.api_key import APIKeyHeader
@@ -11,6 +13,7 @@ from asgi_correlation_id import CorrelationIdMiddleware
 
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from slowapi.middleware import SlowAPIMiddleware
 
 from modelserverAPI.logging_conf import configure_logging
 from modelserverAPI.models.usage import RawInput, ProcessedData, PredictionOut
@@ -20,9 +23,7 @@ from modelserverAPI.machine_learning.preprocess import transform_data
 from modelserverAPI.config import config
 
 logger = logging.getLogger(__name__)
-
-RATE_AUTH_LIMIT = 5
-TIME_WINDOW = 1
+limiter = Limiter(key_func=get_remote_address, default_limits=[config.REQUEST_LIMIT_PER_MINUTE])
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,12 +33,16 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-#app.state.limiter = limiter
 
 app.add_middleware(CorrelationIdMiddleware)
 
+# Global rate limit
+app.state.limiter = limiter
+app.add_middleware(SlowAPIMiddleware)
+
 api_key_header = APIKeyHeader(name=config.API_KEY_NAME)
 app.state.ml_model = load_model()
+
 
 # Auth dependency
 async def get_api_key(api_key: str = Security(api_key_header)):
@@ -46,7 +51,7 @@ async def get_api_key(api_key: str = Security(api_key_header)):
     else:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate API KEY"
+            detail="Could not validate API KEY",
         )
 
 
@@ -57,7 +62,7 @@ async def get_prediction(info: RawInput, api_key: str = Security(get_api_key)):
     model: xgb.sklearn.XGBModel = app.state.ml_model
 
     logger.debug("Generating Prediction...")
-    X = np.array([list(data.values())]) 
+    X = np.array([list(data.values())])
 
     prediction = model.predict(X)[0]
 

@@ -10,8 +10,8 @@ class Settings(BaseSettings):
     ENV_STATE: Optional[str] = None
     API_KEY_NAME: Optional[str] = None
     API_KEY: Optional[str] = None
-    RATE_LIMIT_PER_SEG: Optional[int] = 5
-    
+    REQUEST_LIMIT_PER_MINUTE: Optional[str] = None
+    REQUEST_LIMIT_PER_SECOND: Optional[str] = None
 
 
 class DevConfig(Settings):
@@ -30,5 +30,6 @@ class ProdConfig(Settings):
 def get_config(env_state: str):
     configs = {"dev": DevConfig, "test": TestConfig, "prod": ProdConfig}
     return configs[env_state]()
+
 
 config = get_config(Settings().ENV_STATE)
