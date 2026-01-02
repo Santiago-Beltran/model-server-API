@@ -14,10 +14,11 @@ asgi-correlation-id = "*"
 python-json-logger = "*"
 rich = "*"
 xgboost = "*"
-haversine = "*"
 slowapi = "*"
 requests = "*"
 pandas = "*"
+freezegun = "*"
+hiro = "*"
 
 [dev-packages]
 

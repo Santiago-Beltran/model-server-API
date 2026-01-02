@@ -1,9 +1,17 @@
 import time
 import pytest
 from httpx import AsyncClient
-import asyncio
+from fastapi.testclient import TestClient
+import hiro
+from datetime import timedelta
 
 from modelserverAPI.config import config
+from modelserverAPI.main import app  # Required for testing rate limits\
+
+from fastapi.testclient import TestClient
+from typing import Generator
+
+from modelserverAPI.conftest import client
 
 
 @pytest.fixture
@@ -115,12 +123,53 @@ async def test_predict_performance(async_client: AsyncClient, good_info: dict):
     max_response_time = 1
 
     async def send_request():
+        app.state.limiter.reset()
+
         start_time = time.time()
-        await async_client.post(
+
+        request = await async_client.post(
             "/predict", json=good_info, headers={config.API_KEY_NAME: config.API_KEY}
         )
-        elapsed_time = time.time() - start_time
-        return elapsed_time
+
+        assert request.status_code == 200
+
+        return time.time() - start_time
 
     elapsed_times = [await send_request() for _ in range(num_requests)]
+
     assert sum(elapsed_times) <= max_response_time
+
+
+# Test limits
+@pytest.mark.anyio
+def test_second_request_limit(client: client, good_info: dict):
+    request_sent_counter = 0
+
+    request_limit_per_second = int(config.REQUEST_LIMIT_PER_SECOND.split("/")[0])
+    request_limit_per_minute = int(config.REQUEST_LIMIT_PER_MINUTE.split("/")[0])
+
+    # Test limits make sense.
+    assert request_limit_per_minute <= (request_limit_per_second * 60)
+
+    with hiro.Timeline() as timeline:
+        timeline.freeze()
+
+        while request_sent_counter < request_limit_per_minute:
+            for _ in range(request_limit_per_second):
+                request = client.post(
+                    "/predict",
+                    json=good_info,
+                    headers={config.API_KEY_NAME: config.API_KEY},
+                )
+
+                assert request.status_code == 200
+
+                request_sent_counter += 1
+
+            timeline.forward(1)
+
+    request = client.post(
+        "/predict", json=good_info, headers={config.API_KEY_NAME: config.API_KEY}
+    )
+
+    assert request.status_code == 429

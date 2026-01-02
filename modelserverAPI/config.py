@@ -21,6 +21,9 @@ class DevConfig(Settings):
 class TestConfig(Settings):
     model_config = SettingsConfigDict(env_prefix="TEST_")
 
+    REQUEST_LIMIT_PER_SECOND: Optional[str] = "5/second"
+    REQUEST_LIMIT_PER_MINUTE: Optional[str] = "10/minute"
+
 
 class ProdConfig(Settings):
     model_config = SettingsConfigDict(env_prefix="PROD_")

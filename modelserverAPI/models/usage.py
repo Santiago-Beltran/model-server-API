@@ -74,7 +74,3 @@ class ProcessedData(BaseModel):
     city_Medellín: bool
     city_Sabaneta: bool
 
-
-# Output of the prediction, return the given data for traceability purposes
-class PredictionOut(RawInput):
-    prediction: PositiveFloat

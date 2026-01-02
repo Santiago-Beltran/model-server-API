@@ -26,3 +26,8 @@ async def async_client(client) -> AsyncGenerator[AsyncClient, None]:
         transport=ASGITransport(app=app), base_url=client.base_url
     ) as ac:
         yield ac
+
+
+@pytest.fixture(autouse=True)
+def reset_limiter() -> None:
+    app.state.limiter.reset()
