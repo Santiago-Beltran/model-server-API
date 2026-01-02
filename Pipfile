@@ -17,7 +17,6 @@ xgboost = "*"
 slowapi = "*"
 requests = "*"
 pandas = "*"
-freezegun = "*"
 hiro = "*"
 
 [dev-packages]
