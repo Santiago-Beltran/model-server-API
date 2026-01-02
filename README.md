@@ -1,2 +1,2 @@
 # model-server-API
-REST API with endpoints that allow you to generate tokens to throttle your API, and return predictions to requests that fit your model
+REST API with a predict endpoint and rate limiting that allows you to quickly adapt to your specific model and deploy easily without reinventing the wheel.
